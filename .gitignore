@@ -3,4 +3,5 @@ consensus/genesis.ssz
 consensus/validatordata
 execution/geth
 execution/geth.ipc
+consensus/genesis.json
 .idea/
