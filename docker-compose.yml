@@ -53,7 +53,6 @@ services:
       - --min-sync-peers=0
       - --genesis-state=/consensus/genesis.ssz
       - --bootstrap-node=
-      - --interop-eth1data-votes
       # The chain configuration file used for setting up Prysm
       - --chain-config-file=/consensus/config.yml
       # We specify the chain id used by our execution client
@@ -88,11 +87,11 @@ services:
     image: "ethereum/client-go:latest"
     command:
       - --http
-      - --http.api=eth,net,web3
+      - --http.api=eth,net,web3,debug,trace
       - --http.addr=0.0.0.0
       - --http.corsdomain=*
       - --ws
-      - --ws.api=eth,net,web3
+      - --ws.api=eth,net,web3,debug,trace
       - --ws.addr=0.0.0.0
       - --ws.origins=*
       - --authrpc.vhosts=*
