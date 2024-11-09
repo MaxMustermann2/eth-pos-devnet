@@ -56,7 +56,7 @@ services:
       - --chain-config-file=/consensus/config.yml
       # We specify the chain id used by our execution client
       - --contract-deployment-block=0
-      - --chain-id=${CHAIN_ID:-32382}
+      - --chain-id=${CHAIN_ID:-31337}
       - --rpc-host=0.0.0.0
       - --grpc-gateway-host=0.0.0.0
       - --execution-endpoint=http://geth:8551
