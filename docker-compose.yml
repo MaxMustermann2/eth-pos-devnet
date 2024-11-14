@@ -3,7 +3,8 @@ services:
   # Creates a genesis state for the beacon chain using a YAML configuration file and
   # a deterministic set of 64 validators.
   create-beacon-chain-genesis:
-    image: "gcr.io/prysmaticlabs/prysm/cmd/prysmctl@sha256:4ff675463286ecc0e3efbbdbfb4887697a5c17b4369644b2eb0943608c15465d"
+    image: "gcr.io/prysmaticlabs/prysm/cmd/prysmctl:v5.1.2"
+    user: "1000:1000"
     command:
       - testnet
       - generate-genesis
@@ -23,13 +24,22 @@ services:
   # (geth has a `removedb` option, but it asks for a keyboard confirmation, so we use this instead)
   geth-remove-db:
     image: "alpine:3.19.0"
+    user: "1000:1000"
     command: rm -rf /execution/geth
     volumes:
       - ./execution:/execution
 
+  geth-remove-tmp:
+    image: "alpine:3.19.0"
+    user: "1000:1000"
+    command: rm -rf /tmp/*
+    volumes:
+      - ./tmp:/tmp
+
   # Sets up the genesis configuration for the go-ethereum client from a JSON file.
   geth-genesis:
-    image: "ethereum/client-go@sha256:00f858500bee85a28764075dbfed1431f19dd8450e2694f7042da5272d88f6f8"
+    image: "ethereum/client-go:v1.14.11"
+    user: "1000:1000"
     command: --datadir=/execution init /execution/genesis.json
     volumes:
       - ./execution:/execution
@@ -45,7 +55,8 @@ services:
   # The account used in go-ethereum is set as the suggested fee recipient for transactions
   # proposed via the validators attached to the beacon node.
   beacon-chain:
-    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:v4.1.1"
+    image: "gcr.io/prysmaticlabs/prysm/beacon-chain:v5.1.2"
+    user: "1000:1000"
     command:
       - --datadir=/consensus/beacondata
       # No peers to sync with in this testnet, so setting to 0
@@ -62,10 +73,12 @@ services:
       - --execution-endpoint=http://geth:8551
       - --accept-terms-of-use
       - --jwt-secret=/execution/jwtsecret
-      - --suggested-fee-recipient=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --suggested-fee-recipient=0x123463a4B065722E99115D6c222f267d9cABb524
       - --minimum-peers-per-subnet=0
       - --enable-debug-rpc-endpoints
       - --force-clear-db
+      - --verbosity=warn
+      - --disable-experimental-state
     depends_on:
       create-beacon-chain-genesis:
         condition: service_completed_successfully
@@ -83,7 +96,8 @@ services:
   # Runs the go-ethereum execution client with the specified, unlocked account and necessary
   # APIs to allow for proof-of-stake consensus via Prysm.
   geth:
-    image: "ethereum/client-go@sha256:00f858500bee85a28764075dbfed1431f19dd8450e2694f7042da5272d88f6f8"
+    image: "ethereum/client-go:v1.14.11"
+    user: "1000:1000"
     command:
       - --http
       - --http.api=eth,net,web3,debug,trace
@@ -98,7 +112,7 @@ services:
       - --authrpc.jwtsecret=/execution/jwtsecret
       - --datadir=/execution
       - --allow-insecure-unlock
-      - --unlock=0x123463a4b065722e99115d6c222f267d9cabb524
+      - --unlock=0x123463a4B065722E99115D6c222f267d9cABb524
       - --password=/execution/geth_password.txt
       - --nodiscover
       - --syncmode=full
@@ -119,7 +133,8 @@ services:
   # We run a validator client with 64, deterministically-generated keys that match
   # The validator keys present in the beacon chain genesis state generated a few steps above.
   validator:
-    image: "gcr.io/prysmaticlabs/prysm/validator:v4.1.1"
+    image: "gcr.io/prysmaticlabs/prysm/validator:v5.1.2"
+    user: "1000:1000"
     command:
       - --beacon-rpc-provider=beacon-chain:4000
       - --datadir=/consensus/validatordata
@@ -128,6 +143,8 @@ services:
       - --interop-start-index=0
       - --chain-config-file=/consensus/config.yml
       - --force-clear-db
+      # this logs too much in `info`
+      - --verbosity=warn
     depends_on:
       beacon-chain:
         condition: service_started

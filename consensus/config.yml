@@ -1,5 +1,5 @@
-CONFIG_NAME: interop
-PRESET_BASE: interop
+CONFIG_NAME: exocore-eth-devnet
+PRESET_BASE: holesky
 
 # Genesis
 GENESIS_FORK_VERSION: 0x20000089
@@ -36,3 +36,9 @@ ETH1_FOLLOW_DISTANCE: 4
 EPOCHS_PER_ETH1_VOTING_PERIOD: 2
 
 DEPOSIT_CHAIN_ID: 31337
+DEPOSIT_NETWORK_ID: 31337
+
+# Electra params must be supplied, otherwise it complains
+ELECTRA_FORK_VERSION: 0x20000094
+# Disable Electra, since it's not yet active on any network
+ELECTRA_FORK_EPOCH: 0xffffffffffffffff
