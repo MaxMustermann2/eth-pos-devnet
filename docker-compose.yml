@@ -118,7 +118,8 @@ services:
       - --syncmode=full
     ports:
       - 8551:8551
-      - 8545:8545
+      # 8545 is used by Exocore. so instead we use 8646
+      - 8646:8545
       - 8546:8546
     depends_on:
       geth-genesis:
