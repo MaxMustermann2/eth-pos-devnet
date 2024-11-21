@@ -22,18 +22,19 @@ services:
 
   # Removes the database of the go-ethereum execution client to ensure we start from a clean state.
   # (geth has a `removedb` option, but it asks for a keyboard confirmation, so we use this instead)
-  geth-remove-db:
+  clean:
     image: "alpine:3.19.0"
     user: "${UID}:${GID}"
-    command: rm -rf /execution/geth
+    command: |
+      rm -rf /execution/geth
+      rm -rf /consensus/beacondata
+      rm -rf /consensus/validatordata
+      rm -rf /consensus/genesis.ssz
+      rm -rf /consensus/genesis.json
+      rm -rf /tmp/*
     volumes:
       - ./execution:/execution
-
-  geth-remove-tmp:
-    image: "alpine:3.19.0"
-    user: "${UID}:${GID}"
-    command: rm -rf /tmp/*
-    volumes:
+      - ./consensus:/consensus
       - ./tmp:/tmp
 
   # Sets up the genesis configuration for the go-ethereum client from a JSON file.
@@ -47,7 +48,7 @@ services:
     depends_on:
       create-beacon-chain-genesis:
         condition: service_completed_successfully
-      geth-remove-db:
+      clean:
         condition: service_completed_successfully
 
   # Runs a Prysm beacon chain from a specified genesis state created in the previous step
